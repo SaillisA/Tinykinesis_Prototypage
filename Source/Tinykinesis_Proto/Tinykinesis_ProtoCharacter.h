@@ -36,6 +36,14 @@ class ATinykinesis_ProtoCharacter : public ACharacter
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
+
+	/** Value for the camera's Sensitivity X */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Metrics, meta=(AllowPrivateAccess = "true"))
+	float ValueSensitivityX;
+	/** Value for the camera's Sensitivity Y */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Metrics, meta=(AllowPrivateAccess = "true"))
+	float ValueSensitivityY;
+	
 	
 public:
 	ATinykinesis_ProtoCharacter();
