@@ -89,7 +89,7 @@ void ATinykinesis_ProtoCharacter::Look(const FInputActionValue& Value)
 	if (Controller != nullptr)
 	{
 		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X*ValueSensitivity);
-		AddControllerPitchInput(LookAxisVector.Y*ValueSensitivity);
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
