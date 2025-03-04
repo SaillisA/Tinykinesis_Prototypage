@@ -39,10 +39,7 @@ class ATinykinesis_ProtoCharacter : public ACharacter
 
 	/** Value for the camera's Sensitivity X */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Metrics, meta=(AllowPrivateAccess = "true"))
-	float ValueSensitivityX;
-	/** Value for the camera's Sensitivity Y */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Metrics, meta=(AllowPrivateAccess = "true"))
-	float ValueSensitivityY;
+	float ValueSensitivity;
 	
 	
 public:
