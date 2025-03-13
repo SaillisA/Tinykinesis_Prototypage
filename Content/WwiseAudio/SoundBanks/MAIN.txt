@@ -1,3 +1,0 @@
-Event	ID	Name			Wwise Object Path	Notes
-	1618187162	EVENT_TEST			\Default Work Unit\EVENT_TEST	
-
