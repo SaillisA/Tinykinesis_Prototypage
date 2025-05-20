@@ -168,6 +168,7 @@ public:
         , bUseSound(true)
         , bListenerMoved(true)
         , bAllowLiveUpdate(true)
+        , bBanksLoaded(false)
         , LowLevelLibHandle(nullptr)
         , StudioLibHandle(nullptr)
         , bMixerPaused(false)
@@ -176,7 +177,6 @@ public:
         for (int i = 0; i < EFMODSystemContext::Max; ++i)
         {
             StudioSystem[i] = nullptr;
-            bBanksLoaded[i] = false;
         }
     }
 
@@ -320,7 +320,7 @@ public:
     /** True if we allow live update */
     bool bAllowLiveUpdate;
 
-    bool bBanksLoaded[EFMODSystemContext::Max];
+    bool bBanksLoaded;
 
     /** Dynamic library */
     FString BaseLibPath;
@@ -793,8 +793,20 @@ void FFMODStudioModule::UnloadBanks(EFMODSystemContext::Type Type)
 {
     if (StudioSystem[Type])
     {
-        verifyfmod(StudioSystem[Type]->unloadAll());
-        bBanksLoaded[Type] = false;
+        int bankCount;
+        verifyfmod(StudioSystem[Type]->getBankCount(&bankCount));
+        if (bankCount > 0)
+        {
+            TArray<FMOD::Studio::Bank*> bankArray;
+
+            bankArray.SetNumUninitialized(bankCount, false);
+            verifyfmod(StudioSystem[Type]->getBankList(bankArray.GetData(), bankCount, &bankCount));
+
+            for (int i = 0; i < bankCount; i++)
+            {
+                verifyfmod(bankArray[i]->unload());
+            }
+        }
     }
 }
 
@@ -1272,14 +1284,7 @@ struct NamedBankEntry
 
 bool FFMODStudioModule::AreBanksLoaded()
 {
-    for (int i = 0; i < EFMODSystemContext::Max; ++i)
-    {
-        if (bBanksLoaded[i])
-        {
-            return true;
-        }
-    }
-    return false;
+    return bBanksLoaded;
 }
 
 bool FFMODStudioModule::SetLocale(const FString& LocaleName)
@@ -1467,37 +1472,22 @@ void FFMODStudioModule::LoadBanks(EFMODSystemContext::Type Type)
         }
     }
 
-    bBanksLoaded[Type] = true;
+    bBanksLoaded = true;
 }
 
 #if WITH_EDITOR
 void FFMODStudioModule::ReloadBanks()
 {
     UE_LOG(LogFMOD, Verbose, TEXT("Refreshing auditioning system"));
-    bool bReloadAuditioningBanks = 0;
-    bool bReloadEditorBanks = 0;
-    if (bBanksLoaded[EFMODSystemContext::Auditioning])
-    {
-        StopAuditioningInstance();
-        UnloadBanks(EFMODSystemContext::Auditioning);
-        bReloadAuditioningBanks = true;
-    }
-    if (bBanksLoaded[EFMODSystemContext::Editor])
-    {
-        UnloadBanks(EFMODSystemContext::Editor);
-        bReloadEditorBanks = true;
-    }
+
+    StopAuditioningInstance();
+    UnloadBanks(EFMODSystemContext::Auditioning);
+    DestroyStudioSystem(EFMODSystemContext::Editor);
 
     AssetTable.Load();
 
-    if (bReloadAuditioningBanks)
-    {
-        LoadBanks(EFMODSystemContext::Auditioning);
-    }
-    if (bReloadEditorBanks)
-    {
-        LoadBanks(EFMODSystemContext::Editor);
-    }
+    LoadBanks(EFMODSystemContext::Auditioning);
+    CreateStudioSystem(EFMODSystemContext::Editor);
 }
 
 void FFMODStudioModule::LoadEditorBanks()
